@@ -45,10 +45,21 @@
 #pragma config LVP=OFF
 #pragma config PBADEN=OFF
 
+unsigned char cnt=0;
 void main(void) {
     Setup(); //Hello msg
     while(1){
+        /*
+        if(cnt%16==0) ComandoLCD(0xC0);        
+        EscribeLCD_c(cnt+'0');
+        cnt++; 
+        ReadKey();
+        TakeKbAction();
+        Datos=(Datos&0xF0)|(keyboard_value&0x0F);
+        __delay_ms(500);
+        */
         //Select # of pieces (LCD msg and kb function)
+        
         switch(state){
             case 0: //Get target count
                 target_count=0;
@@ -70,15 +81,13 @@ void main(void) {
                 break;
             case 1:
                 //Print LCD lines
-                while(count<target_count){
-                    //Button handling
-                    if(COUNTER_BUTTON){
-                        
-                    }
-                }
+                state=0;
+                ReadKey();
+                TakeKbAction();
+                if(state==2){}
                 break;
             case 2:
-
+                state=0;
                 break;
             default:
                 state=0;

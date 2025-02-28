@@ -87,108 +87,19 @@ void Setup(void){
     TMR0IE=1; //Timer0 interrupt enable
     GIE=1; //Global interrupt enable
     //LCD setup. Start after 40ms
-    BACKLIGHT_PIN=0;
-    //ConfiguraLCD(0x4);
-    //InicializaLCD();
-    //MensajeLCD_Var("Bienvenido User!");
+    BACKLIGHT_PIN=1;
+    ConfiguraLCD(0x4);
+    InicializaLCD();
 }
 
 void EmergencyStop(void){
     TMR0ON=0; //Turns LED off
-    LED_PIN=0;
+    LED_PIN=1;
     while(1){
         __nop();
     }
 }
-/*
-void CountStart(void){
-    unsigned char state=0;
-    unsigned char tmp_st=0;
-    unsigned char exit_while=0;
-    target_count=0;
-    //MensajeLCD_Var("Cuantas piezas", 0);
-    //MensajeLCD_Var("a contar? ", 1);
-    Datos=keyboard_value;
-    __delay_ms(2000);
-    while(!exit_while){
-        switch(state){
-            case 0:
-                while(!key_pressed){
-                    Datos=keyboard_value;
-                    ReadKey();
-                    TakeKbAction();
-                }
-                Datos=keyboard_value;
-                BACKLIGHT_PIN=1;
-                if(keyboard_value<0xA){
-                    target_count+=(keyboard_value*10);
-                    tmp_st=keyboard_value;
-                    //EscribeLCD_n8(keyboard_value,1);
-                    state=1;
-                    key_pressed=0;
-                } else if(keyboard_value!=0xFF) key_pressed=0;
-                break;
-            case 1:
-                while(!key_pressed){
-                    Datos=state;
-                    ReadKey();
-                    TakeKbAction();
-                }
-                BACKLIGHT_PIN=0;
-                Datos=state;
-                if(keyboard_value<0xA){
-                    target_count+=keyboard_value;
-                    //EscribeLCD_n8(keyboard_value,1);
-                    Datos=target_count;
-                    state=2;
-                    key_pressed=0;
-                }
-                if(keyboard_value==0xF){
-                    target_count=0;
-                    state=0;
-                    //DesplazaCursorI();
-                    //EscribeLCD_c('\b');
-                    //DesplazaCursorI();
-                    key_pressed=0;
-                }
-                break;
-            case 2:
-                while(!key_pressed){
-                    Datos=state;
-                    ReadKey();
-                    TakeKbAction();
-                }
-                Datos=state;
-                if(keyboard_value==0xE){
-                    key_pressed=0;
-                    exit_while=1;
-                }
-                if(keyboard_value==0xF){
-                    target_count=tmp_st;
-                    state=1;
-                    //DesplazaCursorI();
-                    //EscribeLCD_c('\b');
-                    //DesplazaCursorI();
-                    key_pressed=0;
-                }
-                break;
-            default:
-                state=0;
-                break;
-        }
-    }
-}
 
-void CountEnd(){
-    MensajeLCD_Var("Final de Cuenta", 0);
-    MensajeLCD_Var("Presione OK", 1);
-    while(!key_pressed || keyboard_value!=0xE){
-        ReadKey();
-        __nop();
-    }
-    key_pressed=0;
-}
-*/
 void ConfiguraLCD(unsigned char a){
 	if(a==4 | a ==8)
 		interfaz=a;	
@@ -470,26 +381,24 @@ void TakeKbAction(void){
             case 0xA:
 				key_pressed=0;
                 count=0;
-                Datos=0xA;
-				__delay_ms(1000);
+				__delay_ms(10);
                 break;
             case 0xB:
 				key_pressed=0;
+                LED_PIN=1;
                 EmergencyStop();
-                Datos=0xB;
-				__delay_ms(1000);
+				__delay_ms(10);
                 break;
             case 0xC:
 				key_pressed=0; 
-                //CountEnd();
-                Datos=0xC;
-				__delay_ms(1000);
+                state=2;
+                break;
+				__delay_ms(10);
                 break;
             case 0xD:
 				key_pressed=0;
                 BACKLIGHT_PIN=~BACKLIGHT_PIN;
-                Datos=0xD;
-				__delay_ms(1000);
+				__delay_ms(10);
                 break;
             default:
                 break;

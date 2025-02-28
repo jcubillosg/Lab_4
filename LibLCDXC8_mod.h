@@ -78,13 +78,15 @@ void Setup(void){
     keyboard_value=0xFF; //Initial Keyboard value
     //Set Timer0, prescaler 1:16 (for ~0.5ms period) and LED value
     LED_PIN=1;
-    T0CON=0b10000000; //Set Timer0 to Timer mode, 16-bit, rising edge, 1:8 prescaler (with 1MHz clk, the T0 interruption will happen approx. each 0x2*0xFF = 131072 bus cycles, approx. 0.524688 s)
+    T1CON=0x9D;
+    //T0CON=0b10000000; //Set Timer0 to Timer mode, 16-bit, rising edge, 1:8 prescaler (with 1MHz clk, the T0 interruption will happen approx. each 0x2*0xFF = 131072 bus cycles, approx. 0.524688 s)
     //ISR setup
     RBIF=0; //Clean Port B interrupt flag
-    TMR0IF=0; //Clean Timer0 interrupt flag
+    TMR1IF=0; //Clean Timer0 interrupt flag
     RBPU=0; //Port B internal pull ups
     RBIE=1; //Port B (RB7-RB4) interrupt enable
-    TMR0IE=1; //Timer0 interrupt enable
+    TMR1IE=1; //Timer0 interrupt enable
+    PEIE=1; //Enable peripheral interrupts
     GIE=1; //Global interrupt enable
     //LCD setup. Start after 40ms
     BACKLIGHT_PIN=1;
@@ -93,7 +95,7 @@ void Setup(void){
 }
 
 void EmergencyStop(void){
-    TMR0ON=0; //Turns LED off
+    TMR1ON=0; //Turns LED off
     LED_PIN=1;
     while(1){
         __nop();
@@ -413,7 +415,7 @@ void interrupt ISR(void){
             case 0x77: //R1, CE
                 keyboard_value = 0x1;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -421,7 +423,7 @@ void interrupt ISR(void){
             case 0x7B: //RE, CD
                 keyboard_value = 0x2;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -429,7 +431,7 @@ void interrupt ISR(void){
             case 0x7D: //RE, C3
                 keyboard_value = 0x3;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -437,7 +439,7 @@ void interrupt ISR(void){
             case 0x7E: //RE, CB
                 keyboard_value = 0xA;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -445,7 +447,7 @@ void interrupt ISR(void){
             case 0xB7: //RD, CE
                 keyboard_value = 0x4;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -453,7 +455,7 @@ void interrupt ISR(void){
             case 0xBB: //RD, CD
                 keyboard_value = 0x5;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -461,7 +463,7 @@ void interrupt ISR(void){
             case 0xBD: //RD, C3
                 keyboard_value = 0x6;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -469,7 +471,7 @@ void interrupt ISR(void){
             case 0xBE: //RD, CB
                 keyboard_value = 0xB;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -477,7 +479,7 @@ void interrupt ISR(void){
             case 0xD7: //R3, CE
                 keyboard_value = 0x7;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -485,7 +487,7 @@ void interrupt ISR(void){
             case 0xDB: //R3, CD
                 keyboard_value = 0x8;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -493,7 +495,7 @@ void interrupt ISR(void){
             case 0xDD: //R3, C3
                 keyboard_value = 0x9;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -501,7 +503,7 @@ void interrupt ISR(void){
             case 0xDE: //R3, CB
                 keyboard_value = 0xC;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -509,7 +511,7 @@ void interrupt ISR(void){
             case 0xE7: //RB, CE
                 keyboard_value = 0xE;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -517,7 +519,7 @@ void interrupt ISR(void){
             case 0xEB: //RB, CD
                 keyboard_value = 0x0;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -525,7 +527,7 @@ void interrupt ISR(void){
             case 0xED: //RB, C3
                 keyboard_value = 0xF;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
                 __delay_ms(200);
@@ -533,7 +535,7 @@ void interrupt ISR(void){
             case 0xEE: //RB, CB
                 keyboard_value = 0xD;
                 key_pressed=1;
-                TMR0ON=1;
+                TMR1ON=1;
                 time_counter=0;
                 __delay_ms(200);
 				break;
@@ -542,12 +544,12 @@ void interrupt ISR(void){
                 break;
         }
         RBIF=0;
-    } else if(TMR0IF){
+    } else if(TMR1IF){
         LED_PIN=~LED_PIN;
-        TMR0IF=0;
+        TMR1IF=0;
         time_counter++;
         if(time_counter>=40){
-            TMR0ON=0;
+            TMR1ON=0;
             LED_PIN=0;
         } else if(time_counter>=20){
             BACKLIGHT_PIN=0;

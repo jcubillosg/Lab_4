@@ -49,7 +49,6 @@ unsigned char cnt=0;
 void main(void) {
     Setup(); //Hello msg
     while(1){
-        /*
         if(cnt%16==0) ComandoLCD(0xC0);        
         EscribeLCD_c(cnt+'0');
         cnt++; 
@@ -57,9 +56,9 @@ void main(void) {
         TakeKbAction();
         Datos=(Datos&0xF0)|(keyboard_value&0x0F);
         __delay_ms(500);
-        */
         //Select # of pieces (LCD msg and kb function)
         
+        /*
         switch(state){
             case 0: //Get target count
                 target_count=0;
@@ -93,6 +92,7 @@ void main(void) {
                 state=0;
                 break;
         }
+        */
 
         /*
         ReadKey();

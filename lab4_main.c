@@ -38,7 +38,7 @@
  * */
 
 #include <xc.h>
-#include "LibLCDXC8.h"
+#include "LibLCDXC8_mod.h"
 
 #pragma config FOSC=INTOSC_EC
 #pragma config WDT=OFF
@@ -62,13 +62,26 @@ void main(void) {
                     }
                     tmp=keyboard_value;
                 } else if((keyboard_value==0xF) && key_pressed){
-                    target_value-=tmp;                    
+                    target_count-=tmp;                    
+                    //LCD handling
                 } else if(keyboard_value==0xE){
                     if(target_count>0 && target_count<60) state=1; //Ok key
                 }
                 break;
             case 1:
+                //Print LCD lines
+                while(count<target_count){
+                    //Button handling
+                    if(COUNTER_BUTTON){
+                        
+                    }
+                }
+                break;
+            case 2:
 
+                break;
+            default:
+                state=0;
                 break;
         }
 

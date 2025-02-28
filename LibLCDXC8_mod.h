@@ -380,9 +380,8 @@ void MensajeLCD_Var(char* a, char line){
         iter++;
     }
     for(iter; iter<=0xF; iter++){
-        EscribeLCD_c(0);
+        EscribeLCD_c('\b');
     }
-    BACKLIGHT_PIN=~BACKLIGHT_PIN;
 }
 void DireccionaLCD(unsigned char a){
 //Función que ubica el cursor en una posición especificada

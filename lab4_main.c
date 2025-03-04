@@ -49,13 +49,20 @@ unsigned char cnt=0;
 void main(void) {
     Setup(); //Hello msg
     while(1){
+        /*
         if(cnt%16==0) ComandoLCD(0xC0);        
         EscribeLCD_c(cnt+'0');
         cnt++; 
+        */
         ReadKey();
         TakeKbAction();
-        Datos=(Datos&0xF0)|(keyboard_value&0x0F);
-        __delay_ms(500);
+        if((keyboard_value<0xA)&&key_pressed){
+            EscribeLCD_c('0'+keyboard_value);
+            __delay_ms(1000);
+            key_pressed=0;
+            cnt++;
+        }
+        if(cnt%16==0) ComandoLCD(0xC0);
         //Select # of pieces (LCD msg and kb function)
         
         /*

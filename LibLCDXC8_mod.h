@@ -153,6 +153,7 @@ void InicializaLCD(void){
 	RetardoLCD(4);
     MensajeLCD_Var("Hola Usuario!",0);
     __delay_ms(5000);
+    ComandoLCD(0xC0);
 }
 void HabilitaLCD(void){
 //Función que genera los pulsos de habilitación al LCD 	
@@ -394,7 +395,9 @@ void TakeKbAction(void){
             case 0xC:
 				key_pressed=0; 
                 state=2;
-                break;
+                ComandoLCD(0x10); //Shifts cursor left
+                EscribeLCD_c(' '); //Writes whitespace
+                ComandoLCD(0x10); //Shifts cursor left
 				__delay_ms(10);
                 break;
             case 0xD:

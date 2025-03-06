@@ -70,7 +70,8 @@ void Setup(void){
     TRISA=0b11000001;
     TRISB=0xF0; //Keyboard module <RB7:RB4> inputs
     TRISD=0x0; //LCD data <RD7:RD4> outputs
-    //Flag settings
+    //Flag and value reset settings
+    target_count=0;
     state=0;
     key_pressed=0;
     time_counter=0; //Time starts at 0
@@ -89,7 +90,7 @@ void Setup(void){
     PEIE=1; //Enable peripheral interrupts
     GIE=1; //Global interrupt enable
     //LCD setup. Start after 40ms
-    BACKLIGHT_PIN=1;
+    BACKLIGHT_PIN=0;
     ConfiguraLCD(0x4);
     InicializaLCD();
 }
@@ -153,7 +154,7 @@ void InicializaLCD(void){
 	RetardoLCD(4);
     MensajeLCD_Var("Hola Usuario!",0);
     __delay_ms(5000);
-    ComandoLCD(0xC0);
+    //ComandoLCD(0xC0);
 }
 void HabilitaLCD(void){
 //Función que genera los pulsos de habilitación al LCD 	
@@ -384,26 +385,23 @@ void TakeKbAction(void){
             case 0xA:
 				key_pressed=0;
                 count=0;
-				__delay_ms(10);
+				__delay_ms(1000);
                 break;
             case 0xB:
 				key_pressed=0;
                 LED_PIN=1;
                 EmergencyStop();
-				__delay_ms(10);
+				__delay_ms(1000);
                 break;
             case 0xC:
 				key_pressed=0; 
                 state=2;
-                ComandoLCD(0x10); //Shifts cursor left
-                EscribeLCD_c(' '); //Writes whitespace
-                ComandoLCD(0x10); //Shifts cursor left
-				__delay_ms(10);
+				__delay_ms(1000);
                 break;
             case 0xD:
 				key_pressed=0;
-                BACKLIGHT_PIN=~BACKLIGHT_PIN;
-				__delay_ms(10);
+                //BACKLIGHT_PIN=~BACKLIGHT_PIN;
+				__delay_ms(1000);
                 break;
             default:
                 break;
@@ -421,111 +419,97 @@ void interrupt ISR(void){
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0x7B: //RE, CD
                 keyboard_value = 0x2;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0x7D: //RE, C3
                 keyboard_value = 0x3;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0x7E: //RE, CB
                 keyboard_value = 0xA;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xB7: //RD, CE
                 keyboard_value = 0x4;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xBB: //RD, CD
                 keyboard_value = 0x5;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xBD: //RD, C3
                 keyboard_value = 0x6;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xBE: //RD, CB
                 keyboard_value = 0xB;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xD7: //R3, CE
                 keyboard_value = 0x7;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xDB: //R3, CD
                 keyboard_value = 0x8;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xDD: //R3, C3
                 keyboard_value = 0x9;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xDE: //R3, CB
                 keyboard_value = 0xC;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xE7: //RB, CE
                 keyboard_value = 0xE;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
-				break;
+                break;
             case 0xEB: //RB, CD
                 keyboard_value = 0x0;
                 key_pressed=1;
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
 				break;
             case 0xED: //RB, C3
                 keyboard_value = 0xF;
@@ -533,14 +517,12 @@ void interrupt ISR(void){
                 TMR1ON=1;
                 BACKLIGHT_PIN=1;
                 time_counter=0;
-                __delay_ms(200);
 				break;
             case 0xEE: //RB, CB
                 keyboard_value = 0xD;
                 key_pressed=1;
                 TMR1ON=1;
                 time_counter=0;
-                __delay_ms(200);
 				break;
             default:
                 //keyboard_value = 0xFF;

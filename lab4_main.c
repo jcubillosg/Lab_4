@@ -45,7 +45,6 @@
 #pragma config LVP=OFF
 #pragma config PBADEN=OFF
 
-unsigned char cnt=0;
 void main(void) {
     Setup(); //Hello msg
     while(1){
@@ -54,6 +53,7 @@ void main(void) {
         EscribeLCD_c(cnt+'0');
         cnt++; 
         */
+        /*
         ReadKey();
         TakeKbAction();
         if((keyboard_value<0xA)&&key_pressed){
@@ -63,34 +63,49 @@ void main(void) {
             cnt++;
         }
         if(cnt%16==0) ComandoLCD(0xC0);
+        */
         //Select # of pieces (LCD msg and kb function)
-        
-        /*
         switch(state){
             case 0: //Get target count
-                target_count=0;
-                ReadKey();
-                TakeKbAction();
-                if((keyboard_value<0xA)&& key_pressed){
-                    if(!target_count){ //there isn't a previous value
-                        target_count=keyboard_value;
-                    } else{
-                        target_count+=keyboard_value;
+                MensajeLCD_Var("Piezas a contar:",0);
+                while(state==0){
+                    ReadKey();
+                    TakeKbAction();
+                    if(key_pressed){
+                        BACKLIGHT_PIN=1;
+                        if(keyboard_value<0xA){
+                            if(!target_count){
+                                ComandoLCD(0xC0);
+                                target_count=keyboard_value;
+                            } else{
+                                target_count=keyboard_value + target_count*10;
+                            }
+                            EscribeLCD_c('0'+keyboard_value);
+                            key_pressed=0;
+                            __delay_ms(1000);
+                            BACKLIGHT_PIN=0;
+                        } else if(keyboard_value==0xE && target_count){
+                            ComandoLCD(0x10); //Shifts cursor left
+                            EscribeLCD_c(' '); //Writes whitespace
+                            ComandoLCD(0x10); //Shifts cursor left
+                            target_count/=10;
+                            key_pressed=0;
+                            __delay_ms(1000);
+                            BACKLIGHT_PIN=0;
+
+                        } else if(keyboard_value==0x0F){
+                            state=1;
+                            key_pressed=0;
+                            __delay_ms(1000);
+                            BACKLIGHT_PIN=0;
+                        }
                     }
-                    tmp=keyboard_value;
-                } else if((keyboard_value==0xF) && key_pressed){
-                    target_count-=tmp;                    
-                    //LCD handling
-                } else if(keyboard_value==0xE){
-                    if(target_count>0 && target_count<60) state=1; //Ok key
                 }
                 break;
             case 1:
                 //Print LCD lines
-                state=0;
-                ReadKey();
-                TakeKbAction();
-                if(state==2){}
+                BorraLCD();
+                MensajeLCD_Var("Completado!",0);
                 break;
             case 2:
                 state=0;
@@ -99,8 +114,9 @@ void main(void) {
                 state=0;
                 break;
         }
-        */
-
+        BACKLIGHT_PIN=1;
+        __delay_ms(500);
+        BACKLIGHT_PIN=0;
         /*
         ReadKey();
         TakeKbAction();

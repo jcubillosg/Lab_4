@@ -127,10 +127,12 @@ void WelcomeMessage(char* msg){
     }
     for(iter=0;iter<5;iter++){
         __delay_ms(500);
+        time_counter=0;
         ComandoLCD(0x18);
     }
     for(iter=0;iter<5;iter++){
         __delay_ms(500);
+        time_counter=0;
         ComandoLCD(0x1C);
     }
     __delay_ms(500);

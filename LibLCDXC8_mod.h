@@ -37,6 +37,7 @@ unsigned char iter; //Iterable variable for loops
 unsigned char button_pressed; //Last button state flag (manual clear)
 unsigned char prev_button; //Pressed button flag
 unsigned char state; //State machine
+unsigned char idle; //Idle mode flag
 
 void Setup(void);
 void EmergencyStop(void);
@@ -75,6 +76,7 @@ void Setup(void){
     TRISB=0xF0; //Keyboard module <RB7:RB4> inputs
     TRISD=0x0; //LCD data <RD7:RD4> outputs
     //Flag and value reset settings
+    idle=0;
     target_count=0;
     state=0;
     key_pressed=0;
@@ -446,7 +448,7 @@ void TakeKbAction(void){
                 break;
             case 0xC:
 				key_pressed=0; 
-                state=2;
+                if(state) state=2;
 				__delay_ms(1000);
                 break;
             case 0xD:
@@ -463,6 +465,15 @@ void TakeKbAction(void){
 void interrupt ISR(void){
     if(RBIF){
         __delay_ms(50); //Debouncing
+        if(idle){
+            TMR1ON=1;
+            time_counter=0;
+            idle=0;
+            RBIF=0;
+            LATB=LATB|0x0F;
+            keyboard_value=0xFF;
+            return;
+        }
         switch(PORTB){
             case 0x77: //R1, CE
                 keyboard_value = 0x1;
@@ -587,6 +598,9 @@ void interrupt ISR(void){
         if(time_counter>=40){
             TMR1ON=0;
             LED_PIN=0;
+            idle=1;
+            LATB=LATB&0xFE; //Enables only A,B,C,D to restart
+            SLEEP();
         } else if(time_counter>=20){
             BACKLIGHT_PIN=0;
         }

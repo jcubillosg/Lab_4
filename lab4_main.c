@@ -55,7 +55,6 @@ void main(void) {
                 BorraLCD();
                 MensajeLCD_Var("Piezas a contar:",0,0);
                 target_count=0;
-                count=0;
                 while(!state){
                     ReadKey();
                     TakeKbAction();
@@ -84,7 +83,7 @@ void main(void) {
                                 key_pressed=0;
                                 __delay_ms(500);
                             }
-                        }
+                         }
                     }
                 }
                 break;
@@ -97,6 +96,7 @@ void main(void) {
                 MensajeLCD_Var("Cuenta:",1,0);
                 EscribeLCD_c('0'+count/10);
                 EscribeLCD_c('0'+count%10);
+                LATD=(LATD&0xF0)|(count&0x0F);
                 ComandoLCD(0x0C); //Cursor off
                 while((count<target_count) && (state==1)){
                     ReadKey();
@@ -110,6 +110,7 @@ void main(void) {
                             MensajeLCD_Var("Cuenta:",1,0);
                             EscribeLCD_c('0'+count/10);
                             EscribeLCD_c('0'+count%10);
+                            LATD=(LATD&0xF0)|(count&0x0F);
                             __delay_ms(500);
                             while(COUNTER_BUTTON);
                         } else{
@@ -122,6 +123,8 @@ void main(void) {
                 break;
             case 2:
                 BorraLCD();
+                count=0;
+                LATD=(LATD&0xF0)|(count&0x0F);
                 MensajeLCD_Var("Cuenta completa!",0,1);
                 MensajeLCD_Var("Presione OK.",1,1);
                 keyboard_value=0xFF;

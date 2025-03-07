@@ -27,8 +27,8 @@
  * 4-Bit interface via Port D <RD7:RD4>
  * Keyboard keys function mapping:
  * ['0-9'->0-9, 
- *  '*'->Enter/OK,
- *  '#'->Delete,
+ *  '#'->Enter/OK,
+ *  '*'->Delete,
  *  'A'->Reset_count,
  *  'B'->Emergency_stop,
  *  'C'->Count_end,
@@ -67,23 +67,22 @@ void main(void) {
         //Select # of pieces (LCD msg and kb function)
         switch(state){
             case 0: //Get target count
-                MensajeLCD_Var("Piezas a contar:",0);
-                while(state==0){
+                MensajeLCD_Var("Piezas a contar:",0,0);
+                while(!state){
                     ReadKey();
                     TakeKbAction();
                     if(key_pressed){
-                        BACKLIGHT_PIN=1;
                         if(keyboard_value<0xA){
                             if(!target_count){
                                 ComandoLCD(0xC0);
                                 target_count=keyboard_value;
-                            } else{
+                                EscribeLCD_c('0'+keyboard_value);
+                            } else if(target_count < 0xA){
                                 target_count=keyboard_value + target_count*10;
+                                EscribeLCD_c('0'+keyboard_value);
                             }
-                            EscribeLCD_c('0'+keyboard_value);
                             key_pressed=0;
                             __delay_ms(1000);
-                            BACKLIGHT_PIN=0;
                         } else if(keyboard_value==0xE && target_count){
                             ComandoLCD(0x10); //Shifts cursor left
                             EscribeLCD_c(' '); //Writes whitespace
@@ -91,13 +90,12 @@ void main(void) {
                             target_count/=10;
                             key_pressed=0;
                             __delay_ms(1000);
-                            BACKLIGHT_PIN=0;
-
                         } else if(keyboard_value==0x0F){
-                            state=1;
-                            key_pressed=0;
-                            __delay_ms(1000);
-                            BACKLIGHT_PIN=0;
+                            if(target_count && (target_count<60)){
+                                state=1;
+                                key_pressed=0;
+                                __delay_ms(500);
+                            }
                         }
                     }
                 }
@@ -105,18 +103,49 @@ void main(void) {
             case 1:
                 //Print LCD lines
                 BorraLCD();
-                MensajeLCD_Var("Completado!",0);
+                MensajeLCD_Var("Objetivo:",0,0);
+                EscribeLCD_c('0'+target_count/10);
+                EscribeLCD_c('0'+target_count%10);
+                MensajeLCD_Var("Cuenta:",1,0);
+                EscribeLCD_c('0'+count/10);
+                EscribeLCD_c('0'+count%10);
+                while(count<target_count){
+                    ReadKey();
+                    TakeKbAction();
+                    if(COUNTER_BUTTON){
+                        if(button_pressed){
+                            count++;
+                            button_pressed=0;
+                            time_counter=0;
+                            BACKLIGHT_PIN=1;
+                            MensajeLCD_Var("Cuenta:",1,0);
+                            EscribeLCD_c('0'+count/10);
+                            EscribeLCD_c('0'+count%10);
+                            __delay_ms(500);
+                            while(COUNTER_BUTTON);
+                        } else{
+                            __delay_ms(50);
+                            button_pressed = COUNTER_BUTTON;
+                        }
+                    }
+                }
+                state=2;
                 break;
             case 2:
+                BorraLCD();
+                MensajeLCD_Var("Cuenta completa!",0,1);
+                MensajeLCD_Var("Presione OK.",1,1);
+                keyboard_value=0xFF;
+                while(keyboard_value!=0x0F){
+                    KeyRead();
+                    TakeKbAction();
+                }
                 state=0;
                 break;
             default:
                 state=0;
                 break;
         }
-        BACKLIGHT_PIN=1;
-        __delay_ms(500);
-        BACKLIGHT_PIN=0;
         /*
         ReadKey();
         TakeKbAction();

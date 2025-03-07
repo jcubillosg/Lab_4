@@ -8,20 +8,20 @@
 #ifndef Datos
 #define Datos LATD
 #endif
-#ifndef RS
-#define RS LATA3
-#endif
-#ifndef E
-#define E LATA4
-#endif
 #ifndef LED_PIN
 #define LED_PIN LATA1
 #endif
 #ifndef BACKLIGHT_PIN
 #define BACKLIGHT_PIN LATA2
 #endif
+#ifndef RS
+#define RS LATA3
+#endif
+#ifndef E
+#define E LATA4
+#endif
 #ifndef COUNTER_BUTTON
-#define COUNTER_BUTTON PORTA5
+#define COUNTER_BUTTON RA5
 #endif
 
 unsigned char interfaz;
@@ -31,7 +31,7 @@ unsigned char target_count; //Target number of objects counter
 unsigned char key_pressed; //To check for idle states
 unsigned char time_counter; //To count for idle time with Timer0 interrupt
 unsigned char iter; //Iterable variable for loops
-unsigned char tmp; //Temporary variable
+unsigned char button_pressed; //Last button state flag (manual clear)
 unsigned char prev_button; //Pressed button flag
 unsigned char state; //State machine
 
@@ -51,7 +51,7 @@ void EscribeLCD_c(unsigned char);
 void EscribeLCD_n8(unsigned char, unsigned char);
 void EscribeLCD_n16(unsigned int, unsigned char);
 void EscribeLCD_d(double, unsigned char, unsigned char);
-void MensajeLCD_Var(char *, char);
+void MensajeLCD_Var(char *, char, char);
 void DireccionaLCD(unsigned char);
 void FijaCursorLCD(unsigned char,unsigned char);
 void DesplazaPantallaD(void);
@@ -67,13 +67,14 @@ void Setup(void){
     CMCON=0x07;
     LATD=0x0;
     LATB=0x0F;
-    TRISA=0b11000001;
+    TRISA=0b11100001;
     TRISB=0xF0; //Keyboard module <RB7:RB4> inputs
     TRISD=0x0; //LCD data <RD7:RD4> outputs
     //Flag and value reset settings
     target_count=0;
     state=0;
     key_pressed=0;
+    button_pressed=0;
     time_counter=0; //Time starts at 0
     count=0; //Piece count initializes in 0
     keyboard_value=0xFF; //Initial Keyboard value
@@ -90,7 +91,8 @@ void Setup(void){
     PEIE=1; //Enable peripheral interrupts
     GIE=1; //Global interrupt enable
     //LCD setup. Start after 40ms
-    BACKLIGHT_PIN=0;
+    BACKLIGHT_PIN=1;
+    __delay_ms(100);
     ConfiguraLCD(0x4);
     InicializaLCD();
 }
@@ -152,9 +154,8 @@ void InicializaLCD(void){
 	EnviaDato(0xF);
 	HabilitaLCD();
 	RetardoLCD(4);
-    MensajeLCD_Var("Hola Usuario!",0);
+    MensajeLCD_Var("Hola Usuario!",0,1);
     __delay_ms(5000);
-    //ComandoLCD(0xC0);
 }
 void HabilitaLCD(void){
 //Función que genera los pulsos de habilitación al LCD 	
@@ -283,19 +284,21 @@ void EscribeLCD_n16(unsigned int a,unsigned char b){
 void EscribeLCD_d(double num, unsigned char digi, unsigned char digd){
 	
 }
-void MensajeLCD_Var(char* a, char line){
+void MensajeLCD_Var(char* a, char line, char fill_line){
 //Función que escribe una cadena de caracteres variable en la pantalla
 //a es una cadena de caracteres guardada en una variable *char
 //Ejemplo: char aux[4]="Hola"; MensajeLCD_Var(aux);
     iter = 0;
-    if(line == 1){ComandoLCD(0xC0);} else{CursorAInicio();}
+    if(line==1){ComandoLCD(0xC0);} else{CursorAInicio();}
     while((*a)!=0){
         EscribeLCD_c(*a);
         a++;
         iter++;
     }
-    for(iter; iter<=0xF; iter++){
-        EscribeLCD_c('\b');
+    if(fill_line){
+        for(iter; iter<=0xF; iter++){
+            EscribeLCD_c(' ');
+        }
     }
 }
 void DireccionaLCD(unsigned char a){
@@ -400,7 +403,7 @@ void TakeKbAction(void){
                 break;
             case 0xD:
 				key_pressed=0;
-                //BACKLIGHT_PIN=~BACKLIGHT_PIN;
+                BACKLIGHT_PIN=~BACKLIGHT_PIN;
 				__delay_ms(1000);
                 break;
             default:

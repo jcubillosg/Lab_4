@@ -48,26 +48,14 @@
 void main(void) {
     Setup(); //Hello msg
     while(1){
-        /*
-        if(cnt%16==0) ComandoLCD(0xC0);        
-        EscribeLCD_c(cnt+'0');
-        cnt++; 
-        */
-        /*
-        ReadKey();
-        TakeKbAction();
-        if((keyboard_value<0xA)&&key_pressed){
-            EscribeLCD_c('0'+keyboard_value);
-            __delay_ms(1000);
-            key_pressed=0;
-            cnt++;
-        }
-        if(cnt%16==0) ComandoLCD(0xC0);
-        */
         //Select # of pieces (LCD msg and kb function)
         switch(state){
             case 0: //Get target count
+                ComandoLCD(0x0F); //Cursor on (Display on & Blink on)
+                BorraLCD();
                 MensajeLCD_Var("Piezas a contar:",0,0);
+                target_count=0;
+                count=0;
                 while(!state){
                     ReadKey();
                     TakeKbAction();
@@ -109,7 +97,8 @@ void main(void) {
                 MensajeLCD_Var("Cuenta:",1,0);
                 EscribeLCD_c('0'+count/10);
                 EscribeLCD_c('0'+count%10);
-                while(count<target_count){
+                ComandoLCD(0x0C); //Cursor off
+                while((count<target_count) && (state==1)){
                     ReadKey();
                     TakeKbAction();
                     if(COUNTER_BUTTON){
@@ -137,7 +126,7 @@ void main(void) {
                 MensajeLCD_Var("Presione OK.",1,1);
                 keyboard_value=0xFF;
                 while(keyboard_value!=0x0F){
-                    KeyRead();
+                    ReadKey();
                     TakeKbAction();
                 }
                 state=0;
@@ -146,14 +135,5 @@ void main(void) {
                 state=0;
                 break;
         }
-        /*
-        ReadKey();
-        TakeKbAction();
-        if((keyboard_value<0xA)&&(key_pressed)){
-            key_pressed = 0;
-            Datos=keyboard_value;
-            __delay_ms(2000);
-        }
-        */
     }
 }

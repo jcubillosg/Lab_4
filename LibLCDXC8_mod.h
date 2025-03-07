@@ -24,6 +24,9 @@
 #define COUNTER_BUTTON RA5
 #endif
 
+static const char* welcome_msg = "\x01 Welcome New User! \x01\x00"; //Welcome message should shift screen right each half second for 2.5 seconds and back left for 2.5 seconds, total 5 shifts, which means 21 total characters in welcome message
+                                                            
+static const char* gen_char = "\x00\x15\x0E\x04\x04\x04\x0A\x0A";
 unsigned char interfaz;
 unsigned char keyboard_value; //Stores key from 0x0 to 0xF. Default value: 0xFF
 unsigned char count; //Current number of objects counter
@@ -37,8 +40,9 @@ unsigned char state; //State machine
 
 void Setup(void);
 void EmergencyStop(void);
-void CountStart(void);
-void CountEnd(void);
+void WelcomeMessage(char*);
+void CharGenerate(char*, char);
+void IdleLCD(void);
 void ConfiguraLCD(unsigned char);
 void RetardoLCD(unsigned char);
 void EnviaDato(unsigned char);
@@ -105,6 +109,41 @@ void EmergencyStop(void){
     }
 }
 
+void CharGenerate(char* gen_char, char addr){
+    ComandoLCD(0x40|addr);
+    for(iter=0; iter<8; iter++){
+        EscribeLCD_c(gen_char[iter]);
+        __delay_ms(1);
+    }
+    ComandoLCD(0x80);
+}
+
+void WelcomeMessage(char* msg){
+    BorraLCD();
+    ComandoLCD(0x0C);
+    while((*msg)!=0){
+        EscribeLCD_c(*msg);
+        msg++;
+    }
+    for(iter=0;iter<5;iter++){
+        __delay_ms(500);
+        ComandoLCD(0x18);
+    }
+    for(iter=0;iter<5;iter++){
+        __delay_ms(500);
+        ComandoLCD(0x1C);
+    }
+    __delay_ms(500);
+    ComandoLCD(0x0F);
+}
+
+void IdleLCD(void){
+    while(!key_pressed){
+        ReadKey();
+    }
+    key_pressed=0;
+}
+
 void ConfiguraLCD(unsigned char a){
 	if(a==4 | a ==8)
 		interfaz=a;	
@@ -129,19 +168,19 @@ void InicializaLCD(void){
 	else	
 		Datos=0x3F;
 	HabilitaLCD();
-	RetardoLCD(1); //15ms
+	RetardoLCD(1);
 	if(interfaz==4)
 		Datos=(Datos & 0b00001111) | 0x30;
 	else	
 		Datos=0x3F;
 	HabilitaLCD();
-	RetardoLCD(3); //100us
+	RetardoLCD(3);
 	if(interfaz==4)
 		Datos=(Datos & 0b00001111) | 0x30;
 	else	
 		Datos=0x3F;
 	HabilitaLCD();
-	RetardoLCD(4); //40us
+	RetardoLCD(4);
 	if(interfaz==4){
 		Datos=(Datos & 0b00001111) | 0x20;
 		HabilitaLCD();
@@ -154,9 +193,11 @@ void InicializaLCD(void){
 	EnviaDato(0xF);
 	HabilitaLCD();
 	RetardoLCD(4);
-    MensajeLCD_Var("Hola Usuario!",0,1);
-    __delay_ms(5000);
+    CharGenerate(gen_char, 8);
+    __delay_ms(10);
+    WelcomeMessage(welcome_msg);
 }
+
 void HabilitaLCD(void){
 //Función que genera los pulsos de habilitación al LCD 	
 	E=1;
@@ -171,7 +212,7 @@ void BorraLCD(void){
 	HabilitaLCD();
 	RetardoLCD(2);
 }
-void CursorAInicio(){
+void CursorAInicio(void){
 //Función que lleva el cursor a la primera posición o la de la
 //primera línea mas a la izquierda	
     ComandoLCD(0x02);    
@@ -351,17 +392,17 @@ void DesplazaCursorI(void){
 }		
 void RetardoLCD(unsigned char a){
 	switch(a){
-		case 1: __delay_ms(15);
+		case 1: __delay_ms(30);
                 //Delay100TCYx(38); //Retardo de mas de 15 ms
 				break;
-		case 2: __delay_ms(1);
+		case 2: __delay_ms(2);
                 __delay_us(640);
                 //Delay10TCYx(41); //Retardo de mas de 1.64 ms
 				break;
-		case 3: __delay_us(100);
+		case 3: __delay_us(200);
                 //Delay10TCYx(3);	//Retardo de mas de 100 us
 				break;
-		case 4: __delay_us(40);
+		case 4: __delay_us(100);
                 //Delay10TCYx(1); //Retardo de mas de 40 us
 				break;
 		default:
@@ -388,6 +429,11 @@ void TakeKbAction(void){
             case 0xA:
 				key_pressed=0;
                 count=0;
+                if(state==1){
+                    MensajeLCD_Var("Cuenta:",1,0);
+                    EscribeLCD_c('0'+count/10);
+                    EscribeLCD_c('0'+count%10);
+                }
 				__delay_ms(1000);
                 break;
             case 0xB:
